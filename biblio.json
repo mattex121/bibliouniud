@@ -1,0 +1,194 @@
+{
+  "servizi": {
+    "64": {
+      "nome": "Consultazione in biblioteca",
+      "sedi": [
+        20,
+        21,
+        22,
+        101,
+        25,
+        26,
+        27,
+        28
+      ]
+    },
+    "61": {
+      "nome": "Studio in biblioteca",
+      "sedi": [
+        21,
+        24,
+        25,
+        26,
+        27,
+        28
+      ]
+    },
+    "59": {
+      "nome": "Consultazione Fondi speciali Biblioteca umanistica e della formazione",
+      "sedi": [
+        23
+      ]
+    },
+    "58": {
+      "nome": "Consultazione Archivi personali Biblioteca umanistica e della formazione",
+      "sedi": [
+        23
+      ]
+    },
+    "56": {
+      "nome": "Consultazione banca dati Biosphera",
+      "sedi": [
+        101
+      ]
+    },
+    "33": {
+      "nome": "Consultazione banca dati Bloomberg",
+      "sedi": [
+        25
+      ]
+    },
+    "67": {
+      "nome": "Consultazione Biblioteca Florio",
+      "sedi": [
+        29
+      ]
+    },
+    "57": {
+      "nome": "Visita guidata alla biblioteca Florio",
+      "sedi": [
+        29
+      ]
+    },
+    "133": {
+      "nome": "Consultazione Fondi speciali Biblioteca scientifica e tecnologica",
+      "sedi": [
+        82
+      ]
+    }
+  },
+  "sedi": {
+    "20": {
+      "nome": "Biblioteca umanistica e della formazione - Santa Lucia",
+      "indirizzo": "via Mantica, 3 - 33100 Udine",
+      "servizi": [
+        64
+      ]
+    },
+    "30": {
+      "nome": "Biblioteca umanistica e della formazione - Sala studio",
+      "indirizzo": "via Mantica, 3 - 33100 Udine",
+      "servizi": [
+        61
+      ]
+    },
+    "21": {
+      "nome": "Biblioteca umanistica e della formazione - Margreth",
+      "indirizzo": "via Margreth, 3 - 33100 Udine",
+      "servizi": [
+        64,
+        61
+      ]
+    },
+    "22": {
+      "nome": "Biblioteca umanistica e della formazione - Periodici",
+      "indirizzo": "via Petracco, 8 - 33100 Udine",
+      "servizi": [
+        64
+      ]
+    },
+    "23": {
+      "nome": "Biblioteca umanistica e della formazione - Fondi speciali",
+      "indirizzo": "via Petracco, 8 - 33100 Udine",
+      "servizi": [
+        58,
+        59
+      ]
+    },
+    "24": {
+      "nome": "Biblioteca scientifica e tecnologica (vecchia sede)",
+      "indirizzo": "via delle Scienze, 206 (Rizzi) - 33100 Udine",
+      "servizi": [
+        61
+      ]
+    },
+    "101": {
+      "nome": "Nuova Biblioteca scientifica e tecnologica",
+      "indirizzo": "via delle Scienze, 206 (Rizzi) - 33100 Udine",
+      "servizi": [
+        56,
+        64
+      ]
+    },
+    "82": {
+      "nome": "Nuova Biblioteca scientifica e tecnologica - Fondi speciali",
+      "indirizzo": "via delle Scienze, 206 (Rizzi) - 33100 Udine",
+      "servizi": [
+        133
+      ]
+    },
+    "25": {
+      "nome": "Biblioteca economica e giuridica",
+      "indirizzo": "via Tomadini, 30\/A 33100 Udine",
+      "servizi": [
+        64,
+        61,
+        33
+      ]
+    },
+    "26": {
+      "nome": "Biblioteca medica",
+      "indirizzo": "via Colugna, 44 - 33100 Udine",
+      "servizi": [
+        64,
+        61
+      ]
+    },
+    "29": {
+      "nome": "Biblioteca Florio",
+      "indirizzo": "Palazzo Florio - via Palladio, 8 - 33100 Udine",
+      "servizi": [
+        67,
+        57
+      ]
+    },
+    "27": {
+      "nome": "Biblioteca della sede di Gorizia",
+      "indirizzo": "via Santa Chiara, 1 - 34170 Gorizia",
+      "servizi": [
+        64,
+        61
+      ]
+    },
+    "28": {
+      "nome": "Biblioteca della sede di Pordenone",
+      "indirizzo": "via Prasecco, 3\/A - 33170 Pordenone",
+      "servizi": [
+        64,
+        61
+      ]
+    }
+  },
+  "durate": {
+    "30 minuti": 1800,
+    "1 ora": 3600,
+    "1 ora e mezza": 5400,
+    "2 ore": 7200,
+    "2 ore e mezza": 9000,
+    "3 ore": 10800,
+    "3 ore e mezza": 12600,
+    "4 ore": 14400,
+    "4 ore e mezza": 16200,
+    "5 ore": 18000,
+    "5 ore e mezza": 19800,
+    "6 ore": 21600,
+    "6 ore e mezza": 23400,
+    "7 ore": 25200,
+    "7 ore e mezza": 27000,
+    "8 ore": 28800,
+    "8 ore e mezza": 30600,
+    "9 ore": 32400,
+    "9 ore e mezza": 34200,
+    "10 ore": 36000
+  }
+}
