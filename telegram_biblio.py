@@ -22,7 +22,7 @@ from telegram.ext import (
 )
 
 #insert telegram token into secret.txt
-token = str(open("secret.txt","r").read())
+token = str(open("secret.txt","r").read()).rstrip()
 data = json.load(open("biblio.json"))
 # !/usr/bin/env python
 # pylint: disable=C0116,W0613
