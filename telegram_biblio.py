@@ -8,6 +8,7 @@ from pyzbar.pyzbar import decode
 from PIL import Image
 import scaper
 import date_converter
+from utils import check_codice_fiscale
 
 from telegram import ReplyKeyboardMarkup, Update, ReplyKeyboardRemove
 from telegram.ext import (
@@ -154,24 +155,37 @@ def save_surname(update: Update, context: CallbackContext) -> int:
 def save_cf(update: Update, context: CallbackContext) -> int:
     """Ask the user for info about the selected predefined choice."""
     text = update.message.text.upper()
-    context.user_data['cf'] = text
-    reply_text = (
-        f'Bene {context.user_data["nome"]}, inserisci ora la tua email:'
-    )
-    update.message.reply_text(reply_text)
-    return EMAIL
+    if check_codice_fiscale(text):
+        context.user_data['cf'] = text
+        reply_text = (
+            f'Bene {context.user_data["nome"]}, inserisci ora la tua email:'
+        )
+        update.message.reply_text(reply_text)
+        return EMAIL
+    else:
+        reply_text = (
+            f'{context.user_data["nome"]} il codice fiscale che hai inserito sembra errato prova a reinserirlo o a mandare una foto del codice a barre sul retro:'
+        )
+        update.message.reply_text(reply_text)
+        return CF
 
-
-# TODO Finire l'implementazione e verificare che vada su host remoto
 def save_cf_photo(update: Update, context: CallbackContext) -> int:
     """Ask the user for info about the selected predefined choice."""
-    img = Image.open(BytesIO(requests.get(update.message.photo[3].get_file().file_path).content))
+    img = Image.open(BytesIO(requests.get(update.message.photo[-1].get_file().file_path).content))
     output = decode(img)
+    if len(output)>0:
+        if (len(output[0].data) == 16) & check_codice_fiscale(output[0].data.decode("utf-8")):
+            context.user_data['cf'] = output[0].data.decode("utf-8").upper()
+            reply_text = (
+                f'Bene {context.user_data["nome"]}, inserisci ora la tua email:'
+            )
+            update.message.reply_text(reply_text)
+            return EMAIL
     reply_text = (
-        f'Bene {context.user_data["nome"]}, inserisci ora la tua email:'
+        f"{context.user_data['nome']} c'è un problema con la foto che hai inviato,prova a reinviarla nuovamente od ad inserire il codice a mano: "
     )
     update.message.reply_text(reply_text)
-    return EMAIL
+    return CF
 
 
 def save_email(update: Update, context: CallbackContext) -> int:
@@ -458,7 +472,7 @@ def main() -> None:
             ],
             CF: [
                 MessageHandler(Filters.text & ~(Filters.regex('^(Annulla)$')), save_cf),
-                # MessageHandler(Filters.photo, save_cf_photo)
+                MessageHandler(Filters.photo, save_cf_photo)
             ],
             EMAIL: [
                 MessageHandler(Filters.text & ~(Filters.regex('^(Annulla)$')), save_email)
