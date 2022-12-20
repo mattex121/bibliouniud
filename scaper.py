@@ -26,32 +26,17 @@ def get_days(session: requests.Session,sede: int,servizio: int) -> list:
 
 def get_timetable(session:requests.Session,sede:int,servizio:int,data:str,cf:str,durata:int)->dict:
     url = f"https://planner.uniud.it/PortalePlanning/uniud-biblio/ajax.php?_lang=it&area={sede}&data_inizio={data}&servizio={servizio}&tentativi=0&tipo=timetable_available&associazione_risorse_servizi=1&chiave_primaria={cf}&durata_servizio={durata}"
-    timetable = session.get(url).json()
-    return timetable
+    timetable = session.get(url)
+    return timetable.json()
 
-"""
-data_inizio = "09-12-2022"
-timestamp = "1670623200"
-start_time = "1670623200"
-end_time = "1670625000"
-res = 525
-
-post = f"servizio={servizio}&durata_servizio={durata}&timestamp={timestamp}&end_time={end_time}&risorsa={res}&data_inizio={data_inizio}&area={area}&codice_fiscale={cf}&email={email}&1595428644={nome_cognome}&gdpr=1&phone={telefono}&_token={token}"
-url = "https://planner.uniud.it/PortalePlanning/uniud-biblio/index.php?include=review"
-headers = {"Content-Type": "application/x-www-form-urlencoded"}
-review = s.post(url, headers=headers, data=post)
-with open("review.html", "w") as rev:
-    rev.write(review.text)
-
-result = BeautifulSoup(review.text, 'html.parser').find(id="conferma").parent
-
-public_primary = result.contents[1]["value"]
-entry = result.contents[3]["value"]
-_token = result.contents[5]["value"]
-
-url = "https://planner.uniud.it/PortalePlanning/uniud-biblio/index.php?include=confirmed"
-post = f"public_primary={public_primary}&entry={entry}&_token={_token}&conferma="
-headers = {"Content-Type": "application/x-www-form-urlencoded"}
-review = s.post(url, headers=headers, data=post)
-
-pass"""
+def get_review_page(session:requests.Session,servizio:int,durata:int,timestamp:int,end_time:int,res:int,data_inizio:str,area:int,cf:str,email:str,nome_cognome:str,telefono:str,token:str):
+    post = f"servizio={servizio}&durata_servizio={durata}&timestamp={timestamp}&end_time={end_time}&risorsa={res}&data_inizio={data_inizio}&area={area}&codice_fiscale={cf}&email={email}&1595428644={nome_cognome}&gdpr=1&phone={telefono}&_token={token}"
+    url = "https://planner.uniud.it/PortalePlanning/uniud-biblio/index.php?include=review"
+    headers = {"Content-Type": "application/x-www-form-urlencoded"}
+    review = session.post(url, headers=headers, data=post)
+    result = BeautifulSoup(review.text, 'html.parser').find(id="conferma").parent
+    url = "https://planner.uniud.it/PortalePlanning/uniud-biblio/index.php?include=confirmed"
+    post = f"public_primary={result.contents[1]['value']}&entry={result.contents[3]['value']}&_token={result.contents[5]['value']}&conferma="
+    headers = {"Content-Type": "application/x-www-form-urlencoded"}
+    review = session.post(url, headers=headers, data=post)
+    return review

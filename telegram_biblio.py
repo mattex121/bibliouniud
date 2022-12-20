@@ -8,6 +8,7 @@ from pyzbar.pyzbar import decode
 from PIL import Image
 import scaper
 import date_converter
+import utils
 from utils import check_codice_fiscale
 
 from telegram import ReplyKeyboardMarkup, Update, ReplyKeyboardRemove
@@ -37,7 +38,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 SCELTA_INIZIALE, PRENOTAZIONE, NOME, COGNOME, CF, EMAIL, TELEFONO, RIEPILOGO_REGISTRAZIONE, \
-DELETE_ACCOUNT, MODIFICA, DIGITO, SCELTA_TEMPO, GIORNO = range(13)
+DELETE_ACCOUNT, MODIFICA, DIGITO, SCELTA_TEMPO, GIORNO,REVISIONE,CONFERMA_PRENOTAZIONE = range(15)
 
 
 def start(update: Update, context: CallbackContext) -> int:
@@ -266,6 +267,7 @@ def conferma_cancellazione(update: Update, context: CallbackContext) -> int:
 
 def prenota(update: Update, context: CallbackContext) -> int:
     if context.user_data:
+        utils.reset_prenotazione(context.user_data)
         reply_text = f'Ciao {context.user_data["nome"]} benvenuto nel servizio di prenotazione, desideri prenotare per serivizio o per sede?'
         reply_keyboard = [
             ['Servizio', 'Sede'],
@@ -314,9 +316,7 @@ def mostra_scelte(update: Update, context: CallbackContext) -> int:
 def salvo_risposta(update: Update, context: CallbackContext) -> int:
     scelta = update.message.text
     if scelta == "Indietro":
-        if "second_chose" in context.user_data.keys():
-            del context.user_data["second_chose"]
-        del context.user_data["chosing"]
+        utils.reset_prenotazione(context.user_data)
         reply_text = "Scegli pure tra:"
         reply_keyboard = [
             ['Servizio', 'Sede'],
@@ -354,9 +354,6 @@ def salvo_risposta(update: Update, context: CallbackContext) -> int:
                     else:
                         del context.user_data["second_chose"]
                         del context.user_data["chosing"]
-                        print(context.user_data['sedi'])
-                        print(context.user_data['servizi'])
-
                         # TODO togliere in produzione
                         update.message.text = ""
                         if "durata" in context.user_data.keys():
@@ -371,9 +368,7 @@ def salvo_risposta(update: Update, context: CallbackContext) -> int:
 def durata(update: Update, context: CallbackContext) -> int:
     scelta = update.message.text
     if scelta == "Indietro":
-        del context.user_data["durata"]
-        del context.user_data["sedi"]
-        del context.user_data["servizi"]
+        utils.reset_prenotazione(context.user_data)
         reply_text = "Scegli nuovamente tra:"
         reply_keyboard = [
             ['Servizio', 'Sede'],
@@ -413,9 +408,7 @@ def durata(update: Update, context: CallbackContext) -> int:
 def giorno(update: Update, context: CallbackContext) -> int:
     scelta = update.message.text
     if scelta == "Indietro":
-        del context.user_data["durata"]
-        del context.user_data["sedi"]
-        del context.user_data["servizi"]
+        utils.reset_prenotazione(context.user_data)
         reply_text = "Scegli nuovamente tra:"
         reply_keyboard = [
             ['Servizio', 'Sede'],
@@ -425,27 +418,87 @@ def giorno(update: Update, context: CallbackContext) -> int:
         return PRENOTAZIONE
     else:
         date = date_converter.date_str_it_to_str_en(scelta)
-        reply_text = "Bene, ora non resta che scegliere la data della prenotazione"
+        context.user_data["date"] = date
+        reply_text = "Bene, ora non resta che scegliere l'orario della prenotazione"
         timetable = scaper.get_timetable(context.user_data["session"], context.user_data["sedi"],
                                          context.user_data["servizi"], date, context.user_data["cf"],
-                                         context.user_data["durata"])
+                                         data["durate"][context.user_data["durata"]])
         days = list((list(timetable.values())[0]).values())[0]
         times = dict()
+        count = 0
         for k in days:
             for (k1, v1) in days[k].items():
-                times[k1] = v1
+                if days[k][k1]["type"] == "libera":
+                    times[datetime.datetime.fromtimestamp(int(k1)).time().strftime("%-H : %M")] = v1
+                    count = count+1
         context.user_data["avaliable_times"] = times
         keyboad = list()
-        for k in times:
-            l = list()
-            ora = (datetime.datetime.fromtimestamp(float(k))).strftime("%d-%m-%Y")
+        if count != 0:
+            for k in times:
+                l = list()
+                ora = k
+                l.append(ora)
+                keyboad.append(l)
+                del l
+        else:
+            reply_text = "Purtroppo nella giornata odierna non sono presenti posti per questo servizio"
+        keyboad.append(["Indietro"])
+        update.message.reply_text(reply_text,reply_markup=ReplyKeyboardMarkup(keyboad,one_time_keyboard=True))
+        return REVISIONE
 
-        update.message.reply_text(reply_text)
+def revisione_prenotazione(update: Update, context: CallbackContext) -> int:
+    scelta = update.message.text
+    if scelta == "Indietro":
+        utils.reset_prenotazione(context.user_data)
+        reply_text = "Scegli nuovamente tra:"
+        reply_keyboard = [
+            ['Servizio', 'Sede'],
+            ['Annulla'],
+        ]
+        update.message.reply_text(reply_text, reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True))
         return PRENOTAZIONE
+    else:
+        context.user_data["ora"] = scelta
+        reply_text = f"Riepilogo prenotazione:\n" \
+                     f"Luogo: {data['sedi'][context.user_data['sedi']]['nome']}\n" \
+                     f"Servizio {data['servizi'][context.user_data['servizi']]['nome']}\n" \
+                     f"Durata: {context.user_data['durata']}\n" \
+                     f"Inizio prenotazione: {datetime.datetime.fromtimestamp(context.user_data['avaliable_times'][scelta]['start_time']).strftime('%-d/%-m/%-y %-H:%M')}\n" \
+                     f"Fine prenotazione: {datetime.datetime.fromtimestamp(context.user_data['avaliable_times'][scelta]['end_time']).strftime('%-d/%-m/%-y %-H:%M')}\n"
+        reply_keyboard = [
+            ["Conferma","Indietro"]
+        ]
+        update.message.reply_text(reply_text, reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True))
+        return CONFERMA_PRENOTAZIONE
 
+
+def conferma_prenotazione(update: Update, context: CallbackContext) -> int:
+    scelta = update.message.text
+    if scelta == "Indietro":
+        utils.reset_prenotazione(context.user_data)
+        reply_text = "Scegli nuovamente tra:"
+        reply_keyboard = [
+            ['Servizio', 'Sede'],
+            ['Annulla'],
+        ]
+        update.message.reply_text(reply_text, reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True))
+        return PRENOTAZIONE
+    else:
+        reply_text = "Prenotazione confermata, a breve riceverai la mail di confemra sulla tua casella personale!"
+        result = scaper.get_review_page(context.user_data["session"], context.user_data["servizi"],
+                                        context.user_data["durata"]
+                                        , context.user_data["avaliable_times"][context.user_data["ora"]]["start_time"],
+                                        context.user_data["avaliable_times"][context.user_data["ora"]]["end_time"]
+                                        , context.user_data["avaliable_times"][context.user_data["ora"]]["risorsa"], context.user_data["date"]
+                                        , context.user_data["sedi"], context.user_data["cf"], context.user_data["email"].replace("@","%40")
+                                        , context.user_data["nome"] + "+" + context.user_data["cognome"],
+                                        context.user_data["telefono"]
+                                        , context.user_data["token"])
+        update.message.reply_text(reply_text)
+        utils.reset_prenotazione(context.user_data)
+        return ConversationHandler.END
 
 def main() -> None:
-    """Run the bot."""
     # Create the Updater and pass it your bot's token.
     persistence = PicklePersistence(filename='conversationbot')
     updater = Updater(token, persistence=persistence)
@@ -501,6 +554,12 @@ def main() -> None:
             ],
             GIORNO: [
                 MessageHandler(Filters.text & ~(Filters.regex('^(Annulla)$')), giorno),
+            ],
+            REVISIONE:[
+                MessageHandler(Filters.text & ~(Filters.regex('^(Annulla)$')),revisione_prenotazione)
+            ],
+            CONFERMA_PRENOTAZIONE:[
+                MessageHandler(Filters.text & ~(Filters.regex('^(Annulla)$')), conferma_prenotazione)
             ]
         },
         fallbacks=[MessageHandler(Filters.regex('^(Annulla|Fine)'), start)],

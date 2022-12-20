@@ -115,3 +115,9 @@ def check_codice_fiscale(codice:str)->bool:
             sum += cf_rule[(i+1)%2][codice[i]]
         return cf_rule["check"][sum%26] == codice[15]
     return False
+
+def reset_prenotazione(user_data:dict):
+    possible_keys = ["durata","servizi","chose","chosing","second_chose","sedi","session","token","date","ora","avaliable_times"]
+    for k in possible_keys:
+        if k in user_data:
+            del user_data[k]
